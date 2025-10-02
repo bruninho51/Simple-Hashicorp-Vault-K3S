@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app: vault
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      labels:
+        app: vault
+    spec:
+      serviceAccountName: default
+      automountServiceAccountToken: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: vault-data
+        - name: vault-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: token
+                  expirationSeconds: 3600
+      containers:
+        - name: vault
+          image: hashicorp/vault:1.18.1
+          command: ["/bin/sh"]
+          args:
+            - >-
+              echo 'ui = true
+              disable_mlock = true
+
+              storage "file" {
+                path = "/vault/data"
+              }
+
+              listener "tcp" {
+                address = "0.0.0.0:8200"
+                tls_disable = 1
+              }
+
+              api_addr = "https://vault.orcamentos.app"' > /tmp/vault.hcl && vault server -config=/tmp/vault.hcl
+          ports:
+            - containerPort: 8200
+              name: http
+          env:
+            - name: VAULT_ADDR
+              value: "http://0.0.0.0:8200"
+          volumeMounts:
+            - name: data
+              mountPath: /vault/data
+            - name: vault-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 200m
+          livenessProbe:
+            httpGet:
+              path: /v1/sys/health
+              port: 8200
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /v1/sys/health
+              port: 8200
+            initialDelaySeconds: 5
+            periodSeconds: 5
