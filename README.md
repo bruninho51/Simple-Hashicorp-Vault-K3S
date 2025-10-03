@@ -145,3 +145,17 @@ Isso criará namespace, PVC, Deployment, Service e Ingress.
   ```bash
   kubectl exec -n vault -it deploy/vault -- vault login <ROOT_TOKEN>
   ```
+* **Habilitar Kubernetes Auth**:
+
+  ```bash
+  kubectl exec -n vault -it deploy/vault -- vault auth enable kubernetes
+  ```
+
+* **Configurar Kubernetes Auth Usando Dados do Service Account**:
+
+  ```bash
+  kubectl exec -n vault -it deploy/vault -- vault write auth/kubernetes/config \
+    token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+    kubernetes_host="https://kubernetes.default.svc.cluster.local" \
+    kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+  ```

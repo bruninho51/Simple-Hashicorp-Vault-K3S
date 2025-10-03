@@ -27,25 +27,28 @@ spec:
               - serviceAccountToken:
                   path: token
                   expirationSeconds: 3600
+              - downwardAPI:
+                  items:
+                    - path: ca.crt
+                      fieldRef:
+                        fieldPath: metadata.annotations['kubernetes.io/service-account.name']
       containers:
         - name: vault
           image: hashicorp/vault:1.19.5
           command: ["/bin/sh"]
-          args:
-            - >-
-              echo 'ui = true
-              disable_mlock = true
+          args: ["-c", "echo 'ui = true
+disable_mlock = true
 
-              storage "file" {
-                path = "/vault/data"
-              }
+storage \"file\" {
+  path = \"/vault/data\"
+}
 
-              listener "tcp" {
-                address = "0.0.0.0:8200"
-                tls_disable = 1
-              }
+listener \"tcp\" {
+  address = \"0.0.0.0:8200\"
+  tls_disable = 1
+}
 
-              api_addr = "https://vault.orcamentos.app"' > /tmp/vault.hcl && vault server -config=/tmp/vault.hcl
+api_addr = \"https://vault.orcamentos.app\"' > /tmp/vault.hcl && vault server -config=/tmp/vault.hcl"]
           ports:
             - containerPort: 8200
               name: http
@@ -67,13 +70,15 @@ spec:
               cpu: 200m
           livenessProbe:
             httpGet:
-              path: /v1/sys/health
+              path: /v1/sys/health?standbyok=true
               port: 8200
-            initialDelaySeconds: 30
-            periodSeconds: 30
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /v1/sys/health
+              path: /v1/sys/health?standbyok=true
               port: 8200
-            initialDelaySeconds: 5
-            periodSeconds: 5
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            timeoutSeconds: 5
