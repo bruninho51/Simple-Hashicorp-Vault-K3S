@@ -321,7 +321,7 @@ kubectl create namespace teste
 ### 5️⃣ Criar pod de teste com Vault Agent Injector e template `.env`
 
 ```bash
-sudo kubectl apply -f - <<EOF
+kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
