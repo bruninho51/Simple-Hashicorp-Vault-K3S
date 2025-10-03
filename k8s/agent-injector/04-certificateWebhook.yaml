@@ -1,0 +1,25 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vault-agent-injector-webhook
+  namespace: vault
+spec:
+  secretName: vault-agent-injector-webhook-tls
+  duration: 8760h  # 1 ano
+  renewBefore: 720h  # Renovar 30 dias antes
+  commonName: vault-agent-injector.vault.svc
+  dnsNames:
+    - vault-agent-injector
+    - vault-agent-injector.vault
+    - vault-agent-injector.vault.svc
+    - vault-agent-injector.vault.svc.cluster.local
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+  issuerRef:
+    name: vault-injector-ca-issuer
+    kind: Issuer

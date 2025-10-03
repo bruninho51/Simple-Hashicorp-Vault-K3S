@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-agent-injector
+  namespace: vault
+  labels:
+    app: vault-agent-injector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-agent-injector
+  template:
+    metadata:
+      labels:
+        app: vault-agent-injector
+    spec:
+      serviceAccountName: vault-agent-injector
+      containers:
+        - name: sidecar-injector
+          image: hashicorp/vault-k8s:1.5.0
+          env:
+            - name: AGENT_INJECT_VAULT_IMAGE
+              value: "hashicorp/vault:1.19.5"
+            - name: AGENT_INJECT_LOG_LEVEL
+              value: "info"
+          args:
+            - agent-inject
+            - -vault-address=https://vault.orcamentos.app
+            - -listen=:8080
+            - -log-level=info
+            - -tls-cert-file=/etc/tls/tls.crt
+            - -tls-key-file=/etc/tls/tls.key
+          ports:
+            - containerPort: 8080
+              name: https
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/tls
+              readOnly: true
+      volumes:
+        - name: tls
+          secret:
+            secretName: vault-agent-injector-webhook-tls

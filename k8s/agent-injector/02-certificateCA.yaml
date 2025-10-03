@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vault-injector-ca
+  namespace: vault
+spec:
+  secretName: vault-injector-ca-tls
+  isCA: true
+  commonName: vault-injector-ca
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: vault-injector-selfsigned
+    kind: Issuer
