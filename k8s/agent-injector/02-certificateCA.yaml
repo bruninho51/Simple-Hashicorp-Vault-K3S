@@ -7,6 +7,8 @@ spec:
   secretName: vault-injector-ca-tls
   isCA: true
   commonName: vault-injector-ca
+  duration: 87600h    # 10 anos (antes: sem duration = 90 dias default)
+  renewBefore: 8760h  # Renovar 1 ano antes
   privateKey:
     algorithm: ECDSA
     size: 256

@@ -3,7 +3,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: vault-agent-injector-cfg
   annotations:
-    cert-manager.io/inject-ca-from: vault/vault-agent-injector-webhook
+    cert-manager.io/inject-ca-from: vault/vault-injector-ca # Deve apontar para a CA
 webhooks:
   - name: vault.hashicorp.com
     sideEffects: None
