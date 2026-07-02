@@ -364,3 +364,68 @@ SEGREDO_1=valor_super_secreto_1
 SEGREDO_2=valor_super_secreto_2
 ```
 
+# Renovação de certificados do K3s
+
+## Sintomas
+
+Ao executar comandos do Kubernetes, podem ocorrer erros como:
+
+```text
+You must be logged in to the server (the server has asked for the client to provide credentials)
+```
+
+ou
+
+```text
+couldn't get current server API group list: the server has asked for the client to provide credentials
+```
+
+## Verificar a validade dos certificados
+
+```bash
+sudo k3s certificate check
+```
+
+Se houver mensagens contendo `expired`, os certificados precisam ser renovados.
+
+## Renovar os certificados
+
+1. Parar o serviço do K3s:
+
+```bash
+sudo systemctl stop k3s
+```
+
+2. Rotacionar os certificados:
+
+```bash
+sudo k3s certificate rotate
+```
+
+3. Iniciar novamente o serviço:
+
+```bash
+sudo systemctl start k3s
+```
+
+## Validar a renovação
+
+Verifique novamente os certificados:
+
+```bash
+sudo k3s certificate check
+```
+
+Confirme que o cluster está acessível:
+
+```bash
+sudo k3s kubectl get nodes
+```
+
+ou
+
+```bash
+kubectl get nodes
+```
+
+Se o nó aparecer com status `Ready`, a renovação foi concluída com sucesso.
